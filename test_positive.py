@@ -1,6 +1,7 @@
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 
 @pytest.fixture
@@ -30,3 +31,13 @@ def test_homepage_structure(browser, open_url):
     # verify link
     href_value = browser.find_element(By.LINK_TEXT, "TodoMVC").get_attribute("href")
     assert href_value == "http://todomvc.com/", f'link leads to {href_value} and not to "http://todomvc.com/"'
+
+
+def test_create_several_tasks(browser, open_url):
+    textbox_element = browser.find_element(By.ID, "todo-input")
+    for idx, _ in enumerate(range(5)):
+        # create task
+        textbox_element.send_keys(f"task{idx + 1}")
+        textbox_element.send_keys(Keys.ENTER)
+        # validate creation
+        browser.find_element(By.XPATH, f"//label[@data-testid='todo-item-label' and text()='task{idx + 1}']")
