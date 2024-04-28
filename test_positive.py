@@ -145,3 +145,19 @@ def test_create_1000_tasks(browser, open_url, textbox_element):
     create_tasks(browser, 1000, 'task', textbox_element)
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 1000, f'Error! there are {len(all_tasks)} tasks but there should be 1000'
+
+
+def test_mark_all_tasks_as_completed(browser, open_url, textbox_element):
+    # preconditions - create tasks
+    create_tasks(browser, 3, 'task', textbox_element)
+    # mark as done
+    browser.find_element(By.CLASS_NAME, "toggle-all").click()
+    # validate text
+    assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '0 items left!'
+    # validate checkboxes checked
+    checkboxes = (browser.find_elements(By.XPATH, CHECKBOX_ELEMENT))
+    for checkbox in checkboxes:
+        try:
+            checkbox.find_element(By.XPATH, "./ancestor::li[contains(@class, 'completed')]")
+        except NoSuchElementException:
+            raise NoSuchElementException("Found an uncompleted task")
