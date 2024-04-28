@@ -56,7 +56,7 @@ def validate_task_appears(text, num_list, task_list):
             f"Error! Task text is {task[idx].text} and not f'{text}{num_list[idx]}'"
 
 
-def test_homepage_structure(browser, open_url, textbox_element):
+def test_homepage_content(browser, open_url, textbox_element):
     # verify header
     header_text = browser.find_element(By.CSS_SELECTOR, "h1").text
     assert header_text == "todos", f'Error! Header text is {header_text} and not "todos"'
@@ -116,7 +116,7 @@ def test_clear_completed_tasks(browser, open_url, textbox_element):
 
 
 def test_left_items(browser, open_url, textbox_element):
-    # create tasks
+    # preconditions - create tasks
     create_tasks(browser, 3, 'task', textbox_element)
     left_items_element = browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text
     # validate text
@@ -139,3 +139,9 @@ def test_left_items(browser, open_url, textbox_element):
             checkbox.click()
     # validate text
     assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '0 items left!'
+
+
+def test_create_1000_tasks(browser, open_url, textbox_element):
+    create_tasks(browser, 1000, 'task', textbox_element)
+    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(all_tasks) == 1000, f'Error! there are {len(all_tasks)} tasks but there should be 1000'
