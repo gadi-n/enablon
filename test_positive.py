@@ -1,11 +1,13 @@
 import pytest
 from selenium import webdriver
+from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-
 TASK_ELEMENT = "//*[@data-testid='todo-item-label']"
 CHECKBOX_ELEMENT = "//input[@class='toggle' and @type='checkbox' and @data-testid='todo-item-toggle']"
+LEFT_ITEMS_TEXT_ELEMENT = 'todo-count'
+
 
 @pytest.fixture
 def browser():
@@ -79,7 +81,7 @@ def test_create_several_tasks(browser, open_url, textbox_element):
 def test_complete_task_and_display_by_status(browser, open_url, textbox_element):
     # preconditions - create tasks
     create_tasks(browser, 5, 'task', textbox_element)
-    checkboxes = (browser.find_elements (By.XPATH, CHECKBOX_ELEMENT))
+    checkboxes = (browser.find_elements(By.XPATH, CHECKBOX_ELEMENT))
     # complete tasks
     checkboxes[0].click()
     checkboxes[2].click()
@@ -111,3 +113,29 @@ def test_clear_completed_tasks(browser, open_url, textbox_element):
     # validate tasks cleared
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
+
+
+def test_left_items(browser, open_url, textbox_element):
+    # create tasks
+    create_tasks(browser, 3, 'task', textbox_element)
+    left_items_element = browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text
+    # validate text
+    assert left_items_element == '3 items left!'
+    browser.find_elements(By.XPATH, CHECKBOX_ELEMENT)[0].click()
+    assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '2 items left!'
+    browser.find_elements(By.XPATH, CHECKBOX_ELEMENT)[1].click()
+    assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '1 item left!'
+    browser.find_elements(By.XPATH, CHECKBOX_ELEMENT)[0].click()
+    assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '2 items left!'
+    checkboxes = (browser.find_elements(By.XPATH, CHECKBOX_ELEMENT))
+    # click all unchecked tasks
+    for checkbox in checkboxes:
+        flag = False
+        try:
+            checkbox.find_element(By.XPATH, "./ancestor::li[contains(@class, 'completed')]")
+        except NoSuchElementException:
+            flag = True
+        if flag:
+            checkbox.click()
+    # validate text
+    assert browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text == '0 items left!'
