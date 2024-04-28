@@ -161,3 +161,10 @@ def test_mark_all_tasks_as_completed(browser, open_url, textbox_element):
             checkbox.find_element(By.XPATH, "./ancestor::li[contains(@class, 'completed')]")
         except NoSuchElementException:
             raise NoSuchElementException("Found an uncompleted task")
+
+
+def test_fail_to_create_empty_task(browser, open_url, textbox_element):
+    textbox_element.send_keys(f"{'   '}")
+    textbox_element.send_keys(Keys.ENTER)
+    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
