@@ -28,6 +28,11 @@ def textbox_element(browser):
     yield browser.find_element(By.ID, "todo-input")
 
 
+@pytest.fixture
+def action_chains(browser):
+    yield ActionChains(browser)
+
+
 def create_single_task(textbox_element, text):
     """
     :param textbox_element: Selenium WebDriver instance, task textbox element
@@ -65,6 +70,24 @@ def validate_task_appears(text, num_list, task_list):
             f"Error! Task text is {task[idx].text} and not f'{text}{num_list[idx]}'"
 
 
+def delete_task_text(browser, textbox_element, action_chains, task_text):
+    """
+    Edit and delete existing task text
+    :param browser: Selenium WebDriver instance, browser element
+    :param textbox_element: Selenium WebDriver instance, task textbox element
+    :param action_chains: Selenium WebDriver instance, action chains
+    :param task_text: str, the text to delete
+    :return: list, the text input boxes
+    """
+    create_single_task(textbox_element, task_text)
+    task = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    action_chains.double_click(task[0]).perform()
+    input_tasks = browser.find_elements(By.CLASS_NAME, "new-todo")
+    while len(input_tasks[1].get_attribute("value")) > 0:
+        input_tasks[1].send_keys(Keys.BACKSPACE)
+    return input_tasks
+
+
 def test_homepage_content(browser, open_url, textbox_element):
     # verify header
     header_text = browser.find_element(By.CSS_SELECTOR, "h1").text
@@ -87,19 +110,13 @@ def test_create_several_tasks(browser, open_url, textbox_element):
     create_tasks(browser, 5, 'task', textbox_element, verify_creation=True)
 
 
-def test_edit_task(browser, open_url, textbox_element):
-    create_single_task(textbox_element, 'old task')
-    action_chains = ActionChains(browser)
-    task = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    action_chains.double_click(task[0]).perform()
-    input_tasks = browser.find_elements(By.CLASS_NAME, "new-todo")
-    while len(input_tasks[1].get_attribute("value")) > 0:
-        input_tasks[1].send_keys(Keys.BACKSPACE)
+def test_edit_task(browser, open_url, textbox_element, action_chains):
+    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'old task')
     for char in 'new task':
         input_tasks[1].send_keys(char)
     input_tasks[1].send_keys(Keys.ENTER)
     task = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert task[0].text == f'new task', f"Error! Task text is {task[0].text} and not new task'"
+    assert task[0].text == f'new task', f"Error! Task text is {task[0].text} and not 'new task'"
 
 
 def test_complete_task_and_display_by_status(browser, open_url, textbox_element):
@@ -204,3 +221,18 @@ def test_tasks_not_save_after_refresh(browser, open_url, textbox_element):
     browser.refresh()
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
+
+
+def test_fail_to_edit_to_empty_task(browser, open_url, textbox_element, action_chains):
+    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'task')
+    input_tasks[1].send_keys(Keys.ENTER)
+    tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(tasks) == 0, f"Error! Task created with text '{tasks[0].text}'"
+
+
+def test_fail_to_edit_to_1_char_task(browser, open_url, textbox_element, action_chains):
+    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'task')
+    input_tasks[1].send_keys('a')
+    input_tasks[1].send_keys(Keys.ENTER)
+    tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(tasks) == 0, f"Error! Task created with text '{tasks[0].text}'"
