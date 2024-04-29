@@ -3,6 +3,7 @@ from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
 
 TASK_ELEMENT = "//*[@data-testid='todo-item-label']"
 CHECKBOX_ELEMENT = "//input[@class='toggle' and @type='checkbox' and @data-testid='todo-item-toggle']"
@@ -84,6 +85,21 @@ def test_homepage_content(browser, open_url, textbox_element):
 
 def test_create_several_tasks(browser, open_url, textbox_element):
     create_tasks(browser, 5, 'task', textbox_element, verify_creation=True)
+
+
+def test_edit_task(browser, open_url, textbox_element):
+    create_single_task(textbox_element, 'old task')
+    action_chains = ActionChains(browser)
+    task = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    action_chains.double_click(task[0]).perform()
+    input_tasks = browser.find_elements(By.CLASS_NAME, "new-todo")
+    while len(input_tasks[1].get_attribute("value")) > 0:
+        input_tasks[1].send_keys(Keys.BACKSPACE)
+    for char in 'new task':
+        input_tasks[1].send_keys(char)
+    input_tasks[1].send_keys(Keys.ENTER)
+    task = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert task[0].text == f'new task', f"Error! Task text is {task[0].text} and not new task'"
 
 
 def test_complete_task_and_display_by_status(browser, open_url, textbox_element):
