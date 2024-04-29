@@ -168,3 +168,10 @@ def test_fail_to_create_empty_task(browser, open_url, textbox_element):
     textbox_element.send_keys(Keys.ENTER)
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
+
+
+def test_tasks_not_save_after_refresh(browser, open_url, textbox_element):
+    create_tasks(browser, 3, 'task', textbox_element)
+    browser.refresh()
+    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
