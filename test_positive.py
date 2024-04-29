@@ -1,91 +1,11 @@
-import pytest
-from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver import ActionChains
+import utils
 
 TASK_ELEMENT = "//*[@data-testid='todo-item-label']"
 CHECKBOX_ELEMENT = "//input[@class='toggle' and @type='checkbox' and @data-testid='todo-item-toggle']"
 LEFT_ITEMS_TEXT_ELEMENT = 'todo-count'
-
-
-@pytest.fixture
-def browser():
-    driver = webdriver.Chrome()
-    yield driver
-    driver.quit()
-
-
-@pytest.fixture
-def open_url(browser):
-    url = "https://todomvc.com/examples/react/dist/"
-    browser.get(url)
-
-
-@pytest.fixture
-def textbox_element(browser):
-    yield browser.find_element(By.ID, "todo-input")
-
-
-@pytest.fixture
-def action_chains(browser):
-    yield ActionChains(browser)
-
-
-def create_single_task(textbox_element, text):
-    """
-    :param textbox_element: Selenium WebDriver instance, task textbox element
-    :param text: str, text of the task
-    """
-    textbox_element.send_keys(text)
-    textbox_element.send_keys(Keys.ENTER)
-
-
-def create_tasks(browser, num_of_tasks, text, textbox_element, verify_creation=False):
-    """
-    Create tasks
-    :param browser: Selenium WebDriver instance, browser element
-    :param num_of_tasks: int, how many tasks to create
-    :param text: str, text of the task
-    :param textbox_element: Selenium WebDriver instance, task textbox element
-    :param verify_creation: bool, should creation be verified
-    """
-    # create the tasks
-    for idx, _ in enumerate(range(num_of_tasks)):
-        create_single_task(textbox_element, f"{text}{idx + 1}")
-        if verify_creation:
-            browser.find_element(By.XPATH, f"//label[@data-testid='todo-item-label' and text()='{text}{idx + 1}']")
-
-
-def validate_task_appears(text, num_list, task_list):
-    """
-    Validates that the expected tasks appear
-    :param text: str, the task text
-    :param num_list: list, the index number of the task
-    :param task_list: list, the list of the tasks
-    """
-    for idx, task in enumerate(task_list):
-        assert task.text == f'{text}{num_list[idx]}', \
-            f"Error! Task text is {task[idx].text} and not f'{text}{num_list[idx]}'"
-
-
-def delete_task_text(browser, textbox_element, action_chains, task_text):
-    """
-    Edit and delete existing task text
-    :param browser: Selenium WebDriver instance, browser element
-    :param textbox_element: Selenium WebDriver instance, task textbox element
-    :param action_chains: Selenium WebDriver instance, action chains
-    :param task_text: str, the text to delete
-    :return: list, the text input boxes
-    """
-    create_single_task(textbox_element, task_text)
-    task = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    action_chains.double_click(task[0]).perform()
-    input_tasks = browser.find_elements(By.CLASS_NAME, "new-todo")
-    while len(input_tasks[1].get_attribute("value")) > 0:
-        input_tasks[1].send_keys(Keys.BACKSPACE)
-    return input_tasks
 
 
 def test_homepage_content(browser, open_url, textbox_element):
@@ -107,11 +27,11 @@ def test_homepage_content(browser, open_url, textbox_element):
 
 
 def test_create_several_tasks(browser, open_url, textbox_element):
-    create_tasks(browser, 5, 'task', textbox_element, verify_creation=True)
+    utils.create_tasks(browser, 5, 'task', textbox_element, verify_creation=True)
 
 
 def test_edit_task(browser, open_url, textbox_element, action_chains):
-    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'old task')
+    input_tasks = utils.delete_task_text(browser, textbox_element, action_chains, 'old task')
     for char in 'new task':
         input_tasks[1].send_keys(char)
     input_tasks[1].send_keys(Keys.ENTER)
@@ -121,7 +41,7 @@ def test_edit_task(browser, open_url, textbox_element, action_chains):
 
 def test_complete_task_and_display_by_status(browser, open_url, textbox_element):
     # preconditions - create tasks
-    create_tasks(browser, 5, 'task', textbox_element)
+    utils.create_tasks(browser, 5, 'task', textbox_element)
     checkboxes = (browser.find_elements(By.XPATH, CHECKBOX_ELEMENT))
     # complete tasks
     checkboxes[0].click()
@@ -130,22 +50,22 @@ def test_complete_task_and_display_by_status(browser, open_url, textbox_element)
     browser.find_element(By.LINK_TEXT, "Completed").click()
     completed_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(completed_tasks) == 2, f'Error! there are {len(completed_tasks)} completed tasks but there should be 2'
-    validate_task_appears('task', [1, 3], completed_tasks)
+    utils.validate_task_appears('task', [1, 3], completed_tasks)
     # show only active
     browser.find_element(By.LINK_TEXT, "Active").click()
     active_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(active_tasks) == 3, f'Error! there are {len(active_tasks)} active tasks but there should be 3'
-    validate_task_appears('task', [2, 4, 5], active_tasks)
+    utils.validate_task_appears('task', [2, 4, 5], active_tasks)
     # show all tasks
     browser.find_element(By.LINK_TEXT, "All").click()
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 5, f'Error! there are {len(all_tasks)} tasks but there should be 5'
-    validate_task_appears('task', [1, 2, 3, 4, 5], all_tasks)
+    utils.validate_task_appears('task', [1, 2, 3, 4, 5], all_tasks)
 
 
 def test_clear_completed_tasks(browser, open_url, textbox_element):
     # preconditions - create and complete tasks
-    create_tasks(browser, 3, 'task', textbox_element)
+    utils.create_tasks(browser, 3, 'task', textbox_element)
     checkboxes = (browser.find_elements(By.XPATH, CHECKBOX_ELEMENT))
     for checkbox in checkboxes:
         checkbox.click()
@@ -158,7 +78,7 @@ def test_clear_completed_tasks(browser, open_url, textbox_element):
 
 def test_left_items(browser, open_url, textbox_element):
     # preconditions - create tasks
-    create_tasks(browser, 3, 'task', textbox_element)
+    utils.create_tasks(browser, 3, 'task', textbox_element)
     left_items_element = browser.find_elements(By.CLASS_NAME, LEFT_ITEMS_TEXT_ELEMENT)[0].text
     # validate text
     assert left_items_element == '3 items left!'
@@ -183,14 +103,14 @@ def test_left_items(browser, open_url, textbox_element):
 
 
 def test_create_1000_tasks(browser, open_url, textbox_element):
-    create_tasks(browser, 1000, 'task', textbox_element)
+    utils.create_tasks(browser, 1000, 'task', textbox_element)
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 1000, f'Error! there are {len(all_tasks)} tasks but there should be 1000'
 
 
 def test_mark_all_tasks_as_completed(browser, open_url, textbox_element):
     # preconditions - create tasks
-    create_tasks(browser, 3, 'task', textbox_element)
+    utils.create_tasks(browser, 3, 'task', textbox_element)
     # mark as done
     browser.find_element(By.CLASS_NAME, "toggle-all").click()
     # validate text
@@ -202,37 +122,3 @@ def test_mark_all_tasks_as_completed(browser, open_url, textbox_element):
             checkbox.find_element(By.XPATH, "./ancestor::li[contains(@class, 'completed')]")
         except NoSuchElementException:
             raise NoSuchElementException("Found an uncompleted task")
-
-
-def test_fail_to_create_empty_task(browser, open_url, textbox_element):
-    create_single_task(textbox_element, '   ')
-    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
-
-
-def test_fail_to_create_1_char_task(browser, open_url, textbox_element):
-    create_single_task(textbox_element, 'a')
-    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
-
-
-def test_tasks_not_save_after_refresh(browser, open_url, textbox_element):
-    create_tasks(browser, 3, 'task', textbox_element)
-    browser.refresh()
-    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
-
-
-def test_fail_to_edit_to_empty_task(browser, open_url, textbox_element, action_chains):
-    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'task')
-    input_tasks[1].send_keys(Keys.ENTER)
-    tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert len(tasks) == 0, f"Error! Task created with text '{tasks[0].text}'"
-
-
-def test_fail_to_edit_to_1_char_task(browser, open_url, textbox_element, action_chains):
-    input_tasks = delete_task_text(browser, textbox_element, action_chains, 'task')
-    input_tasks[1].send_keys('a')
-    input_tasks[1].send_keys(Keys.ENTER)
-    tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
-    assert len(tasks) == 0, f"Error! Task created with text '{tasks[0].text}'"
