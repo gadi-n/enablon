@@ -27,6 +27,15 @@ def textbox_element(browser):
     yield browser.find_element(By.ID, "todo-input")
 
 
+def create_single_task(textbox_element, text):
+    """
+    :param textbox_element: Selenium WebDriver instance, task textbox element
+    :param text: str, text of the task
+    """
+    textbox_element.send_keys(text)
+    textbox_element.send_keys(Keys.ENTER)
+
+
 def create_tasks(browser, num_of_tasks, text, textbox_element, verify_creation=False):
     """
     Create tasks
@@ -36,10 +45,9 @@ def create_tasks(browser, num_of_tasks, text, textbox_element, verify_creation=F
     :param textbox_element: Selenium WebDriver instance, task textbox element
     :param verify_creation: bool, should creation be verified
     """
+    # create the tasks
     for idx, _ in enumerate(range(num_of_tasks)):
-        # create tasks
-        textbox_element.send_keys(f"{text}{idx + 1}")
-        textbox_element.send_keys(Keys.ENTER)
+        create_single_task(textbox_element, f"{text}{idx + 1}")
         if verify_creation:
             browser.find_element(By.XPATH, f"//label[@data-testid='todo-item-label' and text()='{text}{idx + 1}']")
 
@@ -164,8 +172,13 @@ def test_mark_all_tasks_as_completed(browser, open_url, textbox_element):
 
 
 def test_fail_to_create_empty_task(browser, open_url, textbox_element):
-    textbox_element.send_keys(f"{'   '}")
-    textbox_element.send_keys(Keys.ENTER)
+    create_single_task(textbox_element, '   ')
+    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
+
+
+def test_fail_to_create_1_char_task(browser, open_url, textbox_element):
+    create_single_task(textbox_element, 'a')
     all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
     assert len(all_tasks) == 0, f'Error! there are {len(all_tasks)} tasks but there should be 0'
 
