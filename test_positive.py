@@ -47,18 +47,15 @@ def test_complete_task_and_display_by_status(browser, open_url, textbox_element)
     checkboxes[0].click()
     checkboxes[2].click()
     # show only completed
-    browser.find_element(By.LINK_TEXT, "Completed").click()
-    completed_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    completed_tasks = utils.get_task_elements_by_status(browser, "Completed")
     assert len(completed_tasks) == 2, f'Error! there are {len(completed_tasks)} completed tasks but there should be 2'
     utils.validate_task_appears('task', [1, 3], completed_tasks)
     # show only active
-    browser.find_element(By.LINK_TEXT, "Active").click()
-    active_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    active_tasks = utils.get_task_elements_by_status(browser, "Active")
     assert len(active_tasks) == 3, f'Error! there are {len(active_tasks)} active tasks but there should be 3'
     utils.validate_task_appears('task', [2, 4, 5], active_tasks)
     # show all tasks
-    browser.find_element(By.LINK_TEXT, "All").click()
-    all_tasks = browser.find_elements(By.XPATH, TASK_ELEMENT)
+    all_tasks = utils.get_task_elements_by_status(browser, "All")
     assert len(all_tasks) == 5, f'Error! there are {len(all_tasks)} tasks but there should be 5'
     utils.validate_task_appears('task', [1, 2, 3, 4, 5], all_tasks)
 

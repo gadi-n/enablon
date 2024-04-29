@@ -60,3 +60,14 @@ def delete_task_text(browser, textbox_element, action_chains, task_text):
     while len(input_tasks[1].get_attribute("value")) > 0:
         input_tasks[1].send_keys(Keys.BACKSPACE)
     return input_tasks
+
+
+def get_task_elements_by_status(browser, status):
+    """
+    Get all task elements by their status
+    :param browser: Selenium WebDriver instance, browser element
+    :param status: str, the status of the task
+    :return: list, the task elements with the expected status
+    """
+    browser.find_element(By.LINK_TEXT, status).click()
+    return browser.find_elements(By.XPATH, TASK_ELEMENT)
