@@ -6,12 +6,12 @@ Project Overview:
 
 Tests are conducted using Python 3.10.11 along with pytest and selenium.
 Key project files include:
-README.md: Contains project information and instructions.
-requirements.txt: Lists package dependencies.
-test_positive.py: Positive test cases.
-test_negative.py: Negative test cases.
-conftest.py: Includes fixtures for test usage.
-utils.py: Houses utility functions for testing purposes.
+* README.md: Contains project information and instructions.
+* requirements.txt: Lists package dependencies.
+* test_positive.py: Positive test cases.
+* test_negative.py: Negative test cases.
+* conftest.py: Includes fixtures for test usage.
+* utils.py: Houses utility functions for testing purposes.
 
 
 Installation and Test Execution:
