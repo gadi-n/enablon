@@ -12,7 +12,7 @@ def browser():
     driver.quit()
 
 
-@pytest.fixture
+@pytest.fixture(scope='function', autouse=True)
 def open_url(browser):
     url = "https://todomvc.com/examples/react/dist/"
     browser.get(url)
