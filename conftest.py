@@ -29,7 +29,7 @@ def action_chains(browser):
 
 
 @pytest.fixture(scope="session")
-def config():
-    with open("config.yaml", "r") as config_file:
-        config_data = yaml.safe_load(config_file)
-    yield config_data
+def elements():
+    with open("elements.yaml", "r") as elements_file:
+        elements_data = yaml.safe_load(elements_file)
+    yield elements_data

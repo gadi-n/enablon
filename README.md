@@ -16,6 +16,7 @@ Key project files include:
 * test_negative.py: Negative test cases.
 * conftest.py: Includes fixtures for test usage.
 * utils.py: Houses utility functions for testing purposes.
+* elements.yaml: This YAML file includes the locators for web elements that are frequently utilized across the project.
 
 
 Installation and Test Execution:
@@ -31,6 +32,8 @@ Installation and Test Execution:
 Enhancements for Comprehensive Testing:
 While this project provides valuable insights, for a complete testing solution the following additions should be made:
 
+* Expand test method coverage: Increase the breadth and depth of test scenarios to ensure comprehensive coverage of all functionalities.
+* Update elements.yaml with all the relevant HTML elements.
 * API testing (if applicable).
 * Performance and stress testing.
 * Visual testing using tools like Applitools Eyes (https://applitools.com/platform/eyes/).
