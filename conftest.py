@@ -1,4 +1,5 @@
 import pytest
+import yaml
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ActionChains
@@ -25,3 +26,10 @@ def textbox_element(browser):
 @pytest.fixture
 def action_chains(browser):
     yield ActionChains(browser)
+
+
+@pytest.fixture(scope="session")
+def config():
+    with open("config.yaml", "r") as config_file:
+        config_data = yaml.safe_load(config_file)
+    yield config_data

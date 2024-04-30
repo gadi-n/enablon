@@ -1,0 +1,3 @@
+task_element: "//*[@data-testid='todo-item-label']"
+checkbox_element: "//input[@class='toggle' and @type='checkbox' and @data-testid='todo-item-toggle']"
+left_items_text_element: 'todo-count'
